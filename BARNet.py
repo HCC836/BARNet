@@ -19,9 +19,9 @@ def channel_shuffle(x, groups):
     return x
 
 
-class ChannelAttention(nn.Module):
+class FwmChannelAttention(nn.Module):
     def __init__(self, in_channels, reduction=16):
-        super(ChannelAttention, self).__init__()
+        super(FwmChannelAttention, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
             nn.Linear(in_channels, in_channels//reduction),
@@ -46,14 +46,14 @@ class FWM(nn.Module):
         self.conv1_pointwise = nn.Conv2d(in_ch, out_ch, kernel_size=1, padding=0)
         self.conv1 = nn.Sequential(self.conv1_depthwise, self.conv1_pointwise)
 
-        self.attention1 = ChannelAttention(out_ch)  # 添加注意力层
+        self.attention1 = FwmChannelAttention(out_ch)  # 添加注意力层
 
         self.prelu = nn.PReLU()
         self.conv2_depthwise = nn.Conv2d(out_ch, out_ch, kernel_size=1, padding=0, groups=out_ch)
         self.conv2_pointwise = nn.Conv2d(out_ch, out_ch, kernel_size=1, padding=0)
         self.conv2 = nn.Sequential(self.conv2_depthwise, self.conv2_pointwise)
 
-        self.attention2 = ChannelAttention(out_ch)  # 添加注意力层
+        self.attention2 = FwmChannelAttention(out_ch)  # 添加注意力层
 
         self.sigmoid = nn.Sigmoid()
 
@@ -73,9 +73,9 @@ class FWM(nn.Module):
         return out
 
 
-class ChannelAttention1(nn.Module):
+class BamChannelAttention(nn.Module):
     def __init__(self, channels, reduction=16):
-        super(ChannelAttention1, self).__init__()
+        super(BamChannelAttention1, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.max_pool = nn.AdaptiveMaxPool2d(1)
         self.fc1 = nn.Conv2d(channels, channels//reduction, kernel_size=1, padding=0)
@@ -119,7 +119,7 @@ class BAM(nn.Module):
         else:
             self.downsample = None
 
-        self.attention = ChannelAttention1(out_ch)
+        self.attention = BamChannelAttention(out_ch)
         self.pool_sizes = [3, 5, 7]  # 池化的尺寸，多个尺寸可以根据需要调整
         self.pooled_convs = nn.ModuleList()
         self.reduce_channels = nn.Conv2d(out_ch*(len(self.pool_sizes)+1), out_ch,
