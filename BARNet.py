@@ -408,24 +408,4 @@ class BARNet(nn.Module):
             sal4), F.sigmoid(salb)
 
 
-import cv2
 
-model = BARNet(in_channels=3)
-import torchvision.transforms as transforms
-
-# pretrained_dict = resnet50.state_dict()
-# pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
-# model_dict.update(pretrained_dict)
-# net.load_state_dict(model_dict)
-model.eval()
-img = cv2.imread('img/In_4.bmp')
-img = cv2.resize(img, (224, 224))
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-img = transform(img)
-img = img.unsqueeze(0)
-
-out = model(img)
-print(out)
